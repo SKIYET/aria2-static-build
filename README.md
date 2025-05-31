@@ -1,3 +1,13 @@
+# Changes after forking the original code
+
+1.Compared to the original code, "if [ x"${TARGET_HOST}" = xwin ]; then" is changed to "if [ x"${TARGET_HOST}" = xWindows ]; then" to correct the mistake in Line 470.
+
+2.Adding Patch to Aria2
+
+3.Adding code in build.sh to install git before start the compile .
+
+4.The time to schedule the action is changed.
+
 # aria2-static-build
 
 ![Build and Release](https://github.com/abcfy2/aria2-static-build/actions/workflows/build_and_release.yml/badge.svg)
