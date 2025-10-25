@@ -12,7 +12,8 @@ on:
       - released
   schedule:
     - cron: "0 8 * * 5"
-
+  workflow_dispatch:
+  
 jobs:
   create-prerelease:
     name: Create Prerelease
