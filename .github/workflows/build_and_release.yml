@@ -12,7 +12,8 @@ on:
       - released
   schedule:
     - cron: "0 0 * * 6"
-
+  workflow_dispatch:
+  
 jobs:
   create-prerelease:
     name: Create Prerelease
@@ -26,7 +27,7 @@ jobs:
       - name: Delete Continuous Release
         run: gh release delete continuous --cleanup-tag || true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
       - name: Create Prerelease Tag
         id: create_prerelease_tag
         run: |
@@ -36,7 +37,7 @@ jobs:
           # Make sure draft is false
           gh release edit continuous --draft=false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
 
   static-build-linux:
     runs-on: ubuntu-latest
