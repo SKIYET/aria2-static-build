@@ -6,6 +6,8 @@
 
 3.The time to schedule the action is changed.
 
+4.Use gcc for mips platform and clang for others.
+
 # aria2-static-build
 
 ![Build and Release](https://github.com/abcfy2/aria2-static-build/actions/workflows/build_and_release.yml/badge.svg)
