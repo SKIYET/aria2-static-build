@@ -114,6 +114,7 @@ apt install -y g++ \
   autopoint \
   patch \
   wget \
+  git \
   unzip
 
 BUILD_ARCH="$(gcc -dumpmachine)"
@@ -448,32 +449,48 @@ build_aria2() {
   else
     aria2_tag=master
     # Check download cache whether expired
-    if [ -f "${DOWNLOADS_DIR}/aria2-${aria2_tag}.tar.gz" ]; then
-      cached_file_ts="$(stat -c '%Y' "${DOWNLOADS_DIR}/aria2-${aria2_tag}.tar.gz")"
-      current_ts="$(date +%s)"
-      if [ "$((current_ts - "${cached_file_ts}"))" -gt 86400 ]; then
-        echo "Delete expired aria2 archive file cache..."
-        rm -f "${DOWNLOADS_DIR}/aria2-${aria2_tag}.tar.gz"
-      fi
-    fi
+#    if [ -f "${DOWNLOADS_DIR}/aria2-${aria2_tag}.tar.gz" ]; then
+#      cached_file_ts="$(stat -c '%Y' "${DOWNLOADS_DIR}/aria2-${aria2_tag}.tar.gz")"
+#      current_ts="$(date +%s)"
+#      if [ "$((current_ts - "${cached_file_ts}"))" -gt 86400 ]; then
+#        echo "Delete expired aria2 archive file cache..."
+#        rm -f "${DOWNLOADS_DIR}/aria2-${aria2_tag}.tar.gz"
+#      fi
+#    fi
   fi
 
-  if [ -n "${ARIA2_VER}" ]; then
-    aria2_latest_url="https://github.com/aria2/aria2/releases/download/release-${ARIA2_VER}/aria2-${ARIA2_VER}.tar.gz"
-  else
-    aria2_latest_url="https://github.com/aria2/aria2/archive/master.tar.gz"
-  fi
-  if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
-    aria2_latest_url="https://gh-proxy.com/${aria2_latest_url}"
-  fi
+#  if [ -n "${ARIA2_VER}" ]; then
+#    aria2_latest_url="https://github.com/aria2/aria2/releases/download/release-${ARIA2_VER}/aria2-${ARIA2_VER}.tar.gz"
+#  else
+#    aria2_latest_url="https://github.com/aria2/aria2/archive/master.tar.gz"
+#  fi
+#  if [ x"${USE_CHINA_MIRROR}" = x1 ]; then
+#    aria2_latest_url="https://gh-proxy.com/${aria2_latest_url}"
+#  fi
 
-  if [ ! -f "${DOWNLOADS_DIR}/aria2-${aria2_tag}.tar.gz" ]; then
-    retry wget -cT10 -O "${DOWNLOADS_DIR}/aria2-${aria2_tag}.tar.gz.part" "${aria2_latest_url}"
-    mv -fv "${DOWNLOADS_DIR}/aria2-${aria2_tag}.tar.gz.part" "${DOWNLOADS_DIR}/aria2-${aria2_tag}.tar.gz"
-  fi
+#  if [ ! -f "${DOWNLOADS_DIR}/aria2-${aria2_tag}.tar.gz" ]; then
+#    retry wget -cT10 -O "${DOWNLOADS_DIR}/aria2-${aria2_tag}.tar.gz.part" "${aria2_latest_url}"
+#    mv -fv "${DOWNLOADS_DIR}/aria2-${aria2_tag}.tar.gz.part" "${DOWNLOADS_DIR}/aria2-${aria2_tag}.tar.gz"
+#  fi
   mkdir -p "/usr/src/aria2-${aria2_tag}"
-  tar -zxf "${DOWNLOADS_DIR}/aria2-${aria2_tag}.tar.gz" --strip-components=1 -C "/usr/src/aria2-${aria2_tag}"
+  git config --global user.email "i@mail.skiyet.com"
+  git clone --recursive -j$(nproc) --depth 1 --config http.sslVerify=false https://github.com/aria2/aria2.git "/usr/src/aria2-${aria2_tag}"
+  #tar -zxf "${DOWNLOADS_DIR}/aria2-${aria2_tag}.tar.gz" --strip-components=1 -C "/usr/src/aria2-${aria2_tag}"
   cd "/usr/src/aria2-${aria2_tag}"
+  mkdir ./tmp
+  cd ./tmp
+  wget --no-check-certificate -qO Aria2-Static-Build-WithTCmalloc.zip https://github.com/SKIYET/Aria2-Static-Build-WithTCmalloc/archive/refs/heads/main.zip 
+  unzip Aria2-Static-Build-WithTCmalloc.zip -d ./Aria2-Static-Build-WithTCmalloc
+  mv ./Aria2-Static-Build-WithTCmalloc/Aria2-Static-Build-WithTCmalloc-main/patch ../patch
+    cd ..
+  rm -rf ./tmp
+  git am ./patch/aria2-000*.patch
+  if [ x"${TARGET_HOST}" = xWindows ]; then
+  #ARIA2_EXT_CONF='--without-openssl'
+  git am ./patch/aria2-OnlyWin-000*.patch
+  # else
+  #   ARIA2_EXT_CONF='--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt'
+  fi
   if [ ! -f ./configure ]; then
     autoreconf -i
   fi
